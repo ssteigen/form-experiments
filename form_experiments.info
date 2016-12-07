@@ -1,0 +1,4 @@
+name = Form Experiments
+description = Experiments with Drupal forms.
+core = 7.x
+
