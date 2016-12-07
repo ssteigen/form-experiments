@@ -76,26 +76,26 @@ function form_experiments_01() {
 
 function form_experiments_02($form, & $form_state) {
 
-  $form['image-fieldset'] = array(
-    '#prefix' => '<div id="image-fieldset">',
+  $form['ajax-wrapper'] = array(
+    '#prefix' => '<div id="ajax-wrapper">',
     '#suffix' => '</div>',
   );
 
-  $form['image-fieldset']['image'] = array(
+  $form['ajax-wrapper']['uploaded-files'] = array(
     '#markup' => '',
   );
 
-  $form['image-fieldset']['file'] = array(
+  $form['file'] = array(
     '#type' => 'file',
   );
 
-  $form['image-fieldset']['action'] = array(
+  $form['upload'] = array(
     '#type' => 'submit',
     '#value' => 'upload',
-    '#submit' => array('upload_image'),
+    '#submit' => array('ajax_callback'),
     '#ajax' => array(
-      'callback' => 'upload_image',
-      'wrapper' => 'image-fieldset',
+      'callback' => 'ajax_callback',
+      'wrapper' => 'ajax-wrapper',
       'method' => 'replace',
       'effect' => 'fade',
     ),
@@ -104,67 +104,20 @@ function form_experiments_02($form, & $form_state) {
   return $form;
 }
 
-function upload_image($form, $form_state) {
+function ajax_callback($form, $form_state) {
   $file = file_save_upload('file', array('file_validate_extensions' => array('png gif jpg jpeg')), "public://", $replace = FILE_EXISTS_REPLACE);
 
   if ($file) {
     $file->status = FILE_STATUS_PERMANENT;
     file_save($file);
-    $form['image-fieldset'] = array(
-      '#prefix' => '<div id="image-fieldset">',
-      '#suffix' => '</div>',
-    );
 
-    $form['image-fieldset']['image'] = array(
-      '#markup' => '<div>'. t('Preview:') . '</div><img src="/sites/default/files/' . $file->filename . '" height="250" />',
-    );
+    drupal_set_message('<pre>' . print_r($form_state['values'], TRUE) . '</pre>');
 
-    $form['image-fieldset']['file'] = array(
-      '#markup' => '<div>' . $file->filename . '</div>',
-    );
-
-    $form['image-fieldset']['action'] = array(
-      '#type' => 'submit',
-      '#value' => 'remove',
-      '#submit' => array('remove_image'),
-      '#ajax' => array(
-        'callback' => 'remove_image',
-        'wrapper' => 'image-fieldset',
-        'method' => 'replace',
-        'effect' => 'fade',
-      ),
-    );
+    $form['ajax-wrapper']['uploaded-files']['#markup'] = '<div>' . $file->filename . '</div>';
   }
   else {
     drupal_set_message('No file uploaded.');
   }
 
-  return $form['image-fieldset'];
-}
-
-function remove_image() {
-  $form['image-fieldset'] = array(
-    '#prefix' => '<div id="image-fieldset">',
-    '#suffix' => '</div>',
-  );
-
-  $form['image-fieldset']['image'] = array(
-    '#markup' => '',
-  );
-
-  $form['image-fieldset']['file'] = array(
-    '#type' => 'file',
-  );
-
-  $form['image-fieldset']['action'] = array(
-    '#type' => 'submit',
-    '#value' => 'upload',
-    '#submit' => array('upload_image'),
-    '#ajax' => array(
-      'callback' => 'upload_image',
-      'wrapper' => 'image-fieldset',
-      'method' => 'replace',
-      'effect' => 'fade',
-    ),
-  );
+  return $form['ajax-wrapper'];
 }
