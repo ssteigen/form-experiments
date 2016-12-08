@@ -13,111 +13,56 @@ function form_experiments_menu() {
     'page callback' => 'form_experiments_view',
     'access callback' => TRUE,
     'description' => t('Form Experiments'),
-    'type' => MENU_CALLBACK,
   );
 
   $items['form-experiments/01'] = array(
-    'title' => t('Form Experiments 01'),
+    'title' => t('Form 01'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('form_experiments_01'),
     'access callback' => TRUE,
     'description' => t('Form Experiments 01'),
-    'type' => MENU_CALLBACK,
+    'file' => 'inc/form_experiments_01.inc',
   );
 
   $items['form-experiments/02'] = array(
-    'title' => t('Form Experiments 02'),
+    'title' => t('Form 02'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('form_experiments_02'),
     'access callback' => TRUE,
     'description' => t('Form Experiments 02'),
-    'type' => MENU_CALLBACK,
+    'file' => 'inc/form_experiments_02.inc',
+  );
+
+  $items['form-experiments/03'] = array(
+    'title' => t('Form 03'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('form_experiments_03'),
+    'access callback' => TRUE,
+    'description' => t('Form Experiments 03'),
+    'file' => 'inc/form_experiments_03.inc',
   );
 
   return $items;
 }
 
+/**
+ * Build the content for the landing page.
+ *
+ * Display a link of links to all child pages.
+ *
+ * @return string
+ *   The HTML to render.
+ *
+ */
 function form_experiments_view() {
-  return "Hello World";
-}
-
-//function form_experiments_fix_duplicate_id($element) {
-//  if ($element['#id'] === $element['upload']['#id']) {
-//    $element['#id'] = drupal_html_id($element['#id']);
-//  }
-//  return $element;
-//}
-
-function form_experiments_01() {
-  $form['#attached']['js'] = array(
-    drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
-  );
-
-  $form['managed_files'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Managed Files'),
-  );
-
-  $num_docs = 3;
-  for ($i = 1; $i <= $num_docs; $i++) {
-    $form['managed_files'][$i] = array(
-      '#type' => 'managed_file',
-      '#title' => 'Managed File ' . $i,
-    );
+  $menu = array();
+  $tree = menu_tree_all_data('navigation');
+  foreach ($tree as $branch) {
+    if ($branch['link']['link_path'] == 'form-experiments') {
+      $menu = $branch['below'];
+    }
   }
+  $output = menu_tree_output($menu);
 
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Submit',
-  );
-
-  return $form;
-}
-
-function form_experiments_02($form, & $form_state) {
-
-  $form['ajax-wrapper'] = array(
-    '#prefix' => '<div id="ajax-wrapper">',
-    '#suffix' => '</div>',
-  );
-
-  $form['ajax-wrapper']['uploaded-files'] = array(
-    '#markup' => '',
-  );
-
-  $form['file'] = array(
-    '#type' => 'file',
-  );
-
-  $form['upload'] = array(
-    '#type' => 'submit',
-    '#value' => 'upload',
-    '#submit' => array('ajax_callback'),
-    '#ajax' => array(
-      'callback' => 'ajax_callback',
-      'wrapper' => 'ajax-wrapper',
-      'method' => 'replace',
-      'effect' => 'fade',
-    ),
-  );
-
-  return $form;
-}
-
-function ajax_callback($form, $form_state) {
-  $file = file_save_upload('file', array('file_validate_extensions' => array('png gif jpg jpeg')), "public://", $replace = FILE_EXISTS_REPLACE);
-
-  if ($file) {
-    $file->status = FILE_STATUS_PERMANENT;
-    file_save($file);
-
-    drupal_set_message('<pre>' . print_r($form_state['values'], TRUE) . '</pre>');
-
-    $form['ajax-wrapper']['uploaded-files']['#markup'] = '<div>' . $file->filename . '</div>';
-  }
-  else {
-    drupal_set_message('No file uploaded.');
-  }
-
-  return $form['ajax-wrapper'];
+  return drupal_render($output);
 }
