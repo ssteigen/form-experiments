@@ -13,9 +13,42 @@ function form_experiments_06($form, &$form_state) {
     drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
   );
 
-  $form['other_field'] = array(
+  $form['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Activity Type'),
+    '#options' => array(t('Option 1'), t('Option 2'), t('Option 3')),
+    '#empty_option' => '- Select -',
+    //'#required' => TRUE,
+  );
+
+  $form['provider'] = array(
     '#type' => 'textfield',
-    '#title' => t('Other field'),
+    '#title' => t('Provider'),
+    '#attributes' => array('placeholder' => t('Add the name of the provider')),
+    //'#required' => TRUE,
+    //'#description' => t('Add the name of the provider'),
+  );
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title / Description'),
+    '#attributes' => array('placeholder' => t('Add the name of the activity')),
+    //'#description' => t('Add the name of the activity'),
+    //'#required' => TRUE,
+  );
+
+  $form['date'] = array(
+    '#type' => 'date',
+    '#title' => t('Date Completed'),
+    //'#required' => TRUE,
+  );
+
+  $form['credits'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Credit Hours'),
+    '#attributes' => array('placeholder' => t('Add hours')),
+    //'#description' => t('Add hours'),
+    //'#required' => TRUE,
   );
 
   $form['field_container'] = array(
@@ -25,18 +58,17 @@ function form_experiments_06($form, &$form_state) {
     '#suffix' => '</div>',
   );
 
-  $uploaded_files = isset($form_state['file_attachments']) ? $form_state['file_attachments'] : array();
+  /** Uploaded files **/
 
+  $uploaded_files = isset($form_state['file_attachments']) ? $form_state['file_attachments'] : array();
   foreach ($uploaded_files as $fid => $file) {
     $form['field_container'][$fid] = array(
       '#type' => 'fieldset',
       '#tree' => TRUE,
     );
-
     $form['field_container'][$fid]['filename'] = array(
       '#markup' => drupal_basename($file->filename),
     );
-
     $form['field_container'][$fid]['remove_file'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
@@ -49,16 +81,17 @@ function form_experiments_06($form, &$form_state) {
     );
   }
 
+  /** File upload **/
+
   $form['file_upload'] = array(
     '#type' => 'fieldset',
     '#tree' => FALSE,
     '#attributes' => array('class' => array('auto-upload')),
+    '#title' => t('Supporting Documentation'),
   );
-
   $form['file_upload']['file'] = array(
     '#type' => 'file',
   );
-
   $form['file_upload']['upload'] = array(
     '#type' => 'submit',
     '#value' => t('Upload'),
@@ -69,17 +102,17 @@ function form_experiments_06($form, &$form_state) {
     ),
   );
 
+  /** Form actions **/
+
   $form['form-actions'] = array(
     '#type' => 'fieldset',
     '#tree' => TRUE,
   );
-
   $form['form-actions']['cancel'] = array(
     '#type' => 'submit',
     '#value' => t('Cancel'),
     '#submit' => ['form_experiments_06_cancel'],
   );
-
   $form['form-actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
