@@ -1,5 +1,6 @@
 <?php
 function form_experiments_05($form, &$form_state) {
+  $form['#cache'] = false;
   $form['field_container'] = [
     '#type' => 'container',
     '#weight' => 80,
@@ -11,17 +12,17 @@ function form_experiments_05($form, &$form_state) {
 
   $uploaded_files = isset($form_state['file_attachments']) ? $form_state['file_attachments'] : [];
 
-  foreach ($uploaded_files as $uri => $filename) {
-    $form['field_container'][$uri] = [
+  foreach ($uploaded_files as $fid => $file) {
+    $form['field_container'][$fid] = [
       '#type' => 'fieldset',
       '#tree' => TRUE,
     ];
 
-   $form['field_container'][$uri]['field1'] = [
-      '#markup' => $filename,
+   $form['field_container'][$fid]['field1'] = [
+      '#markup' => drupal_basename($file->filename),
     ];
 
-    $form['field_container'][$uri]['remove_file'] = [
+    $form['field_container'][$fid]['remove_file'] = [
       '#type' => 'submit',
       '#value' => t('Remove'),
       '#submit' => ['form_experiments_05_remove'],
@@ -34,7 +35,7 @@ function form_experiments_05($form, &$form_state) {
         'callback' => 'form_experiments_05_remove_callback',
         'wrapper' => 'js-ajax-elements-wrapper',
       ],
-      '#name' => 'remove_file_' . $uri,
+      '#name' => 'remove_file_' . $file->fid,
     ];
   }
 
@@ -64,14 +65,13 @@ function form_experiments_05($form, &$form_state) {
 }
 
 function form_experiments_05_remove($form, &$form_state) {
-  print_r($form_state['triggering_element']['#parents']);
+  $fid = $form_state['triggering_element']['#parents'][1];
+  $file = $form_state['file_attachments'][$fid];
 
-  $uri_to_remove = $form_state['triggering_element']['#parents'][1];
-
-  unset($form_state['file_attachments'][$uri_to_remove]);
+  unset($form_state['file_attachments'][$fid]);
+  file_delete($file);
 
   $form_state['rebuild'] = TRUE;
-  drupal_get_messages();
 }
 
 function form_experiments_05_remove_callback($form, &$form_state) {
@@ -79,16 +79,19 @@ function form_experiments_05_remove_callback($form, &$form_state) {
 }
 
 function form_experiments_05_add_one($form, &$form_state) {
-  $file = file_save_upload('file_upload');
+  $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
+  $file = file_save_upload('file_upload', $validators);
 
-  if (!$form_state['file_attachments']) {
-    $form_state['file_attachments'] = [];
+  if ($file) {
+    if (!isset($form_state['file_attachments'])) {
+      $form_state['file_attachments'] = [];
+    }
+
+    $form_state['file_attachments'][$file->fid] = $file;
+
+    // Only rebuild the form when a file passes validation and is uploaded correctly.
+    $form_state['rebuild'] = TRUE;
   }
-
-  $form_state['file_attachments'][$file->uri] = $file->filename;
-
-  $form_state['rebuild'] = TRUE;
-  drupal_get_messages();
 }
 
 function form_experiments_05_add_one_callback($form, $form_state) {
