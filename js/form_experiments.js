@@ -4,14 +4,14 @@
  * JavaScript to support Form Experiments.
  */
 
-/**
- * Automatic upload behavior for file fields.
- *
- * Copied from AutoUpload module. Slightly modified.
- *
- * @see https://www.drupal.org/project/autoupload
- */
 (function ($) {
+  /**
+   * Automatic upload behavior for file fields.
+   *
+   * Copied from AutoUpload module. Slightly modified.
+   *
+   * @see https://www.drupal.org/project/autoupload
+   */
   Drupal.behaviors.fileAutoUpload = {
     attach: function(context, settings) {
       $('.auto-upload input.form-submit[value=Upload]', context).hide();

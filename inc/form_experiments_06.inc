@@ -9,6 +9,7 @@
  */
 function form_experiments_06($form, &$form_state) {
   $form['#cache'] = false;
+
   $form['#attached']['js'] = array(
     drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
   );
@@ -51,15 +52,14 @@ function form_experiments_06($form, &$form_state) {
     //'#required' => TRUE,
   );
 
+  /** UPLOADED FILES **/
+
   $form['field_container'] = array(
     '#type' => 'container',
     '#tree' => TRUE,
     '#prefix' => '<div id="js-ajax-elements-wrapper">',
     '#suffix' => '</div>',
   );
-
-  /** Uploaded files **/
-
   $uploaded_files = isset($form_state['file_attachments']) ? $form_state['file_attachments'] : array();
   foreach ($uploaded_files as $fid => $file) {
     $form['field_container'][$fid] = array(
@@ -81,7 +81,7 @@ function form_experiments_06($form, &$form_state) {
     );
   }
 
-  /** File upload **/
+  /** ADD A FILE **/
 
   $form['file_upload'] = array(
     '#type' => 'fieldset',
@@ -102,7 +102,7 @@ function form_experiments_06($form, &$form_state) {
     ),
   );
 
-  /** Form actions **/
+  /** FORM ACTIONS **/
 
   $form['form-actions'] = array(
     '#type' => 'fieldset',
