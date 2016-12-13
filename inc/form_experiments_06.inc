@@ -14,6 +14,37 @@ function form_experiments_06($form, &$form_state) {
     drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
   );
 
+  $form['notes'] = array(
+    '#markup' => '
+      <h2>To-do:</h2>
+      <ul>
+        <li>Apply Bootstrap theme - check upload button behavior</li>
+        <li>Implement datepicker</li>
+        <li>Implement provider auto-complete</li>
+        <li>Add validation
+          <ul>
+            <li>Provider must be at least two characters</li>
+            <li>Title must be at least two characters</li>
+            <li>Date completed must be before today (today is also valid)</li>
+            <li>Credit hours must be an integer between .25 and 999 (inclusive - .25 and 999 are allowed)</li>
+            <li>Credit hours can be divided into quarters only (i.e. x.00, x.25, x.50, x.75 are allowed)</li>
+          </ul>
+        </li>
+        <li>File upload tweaks
+          <ul>
+            <li>Files should appear between "Supporting Documentation" heading and "choose file" input</li>
+            <li>File names should be links to open the file in a new tab</li>
+            <li>Appear blank when upload completes (clear out last filename)</li>
+            <li>Limit to three files</li>
+            <li>Limit filesize to 6MB</li>
+            <li>Supported file types: doc docx gif jpeg jpg odt pdf png tif tiff</li>
+            <li>Implement delete confirmation</li>
+          </ul>
+        </li>
+      </ul>
+    ',
+  );
+
   $form['type'] = array(
     '#type' => 'select',
     '#title' => t('Activity Type'),
