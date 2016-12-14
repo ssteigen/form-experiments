@@ -18,6 +18,8 @@
 function form_experiments_08($form, &$form_state) {
   drupal_set_message('Build form');
 
+  $providers = array('Abby', 'Becky', 'Carissa', 'Daisy', 'Emma', 'Frida', 'Gretchen', 'Hannah', 'Ingrid');
+
   $form['#cache'] = FALSE;
 
   $form['#attached'] = array(
@@ -25,7 +27,7 @@ function form_experiments_08($form, &$form_state) {
     'js' => array(
       drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
       array(
-        'data' => array('form_experiment_08_providers' => array('Abby', 'Becky', 'Carissa', 'Daisy', 'Emma', 'Frida', 'Gretchen', 'Hannah', 'Ingrid')),
+        'data' => array('form_experiment_08_providers' => $providers),
         'type' => 'setting',
       ),
     ),
@@ -108,7 +110,6 @@ function form_experiments_08($form, &$form_state) {
   );
   $form['doc_upload']['file'] = array(
     '#type' => 'file',
-    '#process' => 'form_experiments_08_doc_upload',
   );
   $form['doc_upload']['upload'] = array(
     '#type' => 'submit',
@@ -151,28 +152,31 @@ function form_experiments_08_validate($form, &$form_state) {
   drupal_set_message('Validate');
 
   $provider = $form_state['values']['provider'];
-  if (isset($provider) && strlen($provider) < 2) {
+  if (!empty($provider) && strlen($provider) < 2) {
     form_set_error('provider', 'Provider must contain at least two characters');
   }
 
   $title = $form_state['values']['title'];
-  if (isset($title) && strlen($title) < 2) {
+  if (!empty($title) && strlen($title) < 2) {
     form_set_error('title', 'Title must contain at least two characters.');
   }
 
-  $date = DateTime::createFromFormat('Y-m-d', $form_state['values']['date']);
-  if (isset($date) && $date > new DateTime()) {
-    form_set_error('date', 'Date cannot be in the future');
+  if (!empty($form_state['values']['date'])) {
+    $date = DateTime::createFromFormat('Y-m-d', $form_state['values']['date']);
+    if (isset($date) && $date > new DateTime()) {
+      form_set_error('date', 'Date cannot be in the future');
+    }
   }
 
-  $hours = $form_state['values']['hours'];
-  if (isset($hours) && ($hours < 0.25 || $hours > 999)) {
+  $hours = $form_state['values']['credits'];
+  if (!empty($hours) && ($hours < 0.25 || $hours > 999)) {
     form_set_error('credits', 'Hours must be between 0.25 and 999.');
   }
-  if (isset($hours) && fmod($hours, 0.25) != 0) {
+  if (!empty($hours) && fmod(floatval($hours), floatval(0.25)) != 0) {
     form_set_error('credits', 'Hours must be rounded to the nearest quarter-hour.');
   }
 
+  // @FIXME Why isn't this working?
   form_experiments_08_set_inline_errors($form, $form_state);
 }
 
