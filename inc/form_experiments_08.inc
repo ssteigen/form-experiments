@@ -26,11 +26,21 @@ function form_experiments_08($form, &$form_state) {
     'library' => array(array('system', 'ui.autocomplete')),
     'js' => array(
       drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
+      drupal_get_path('module', 'form_experiments') . '/js/form_experiments_08.js',
       array(
         'data' => array('form_experiment_08_providers' => $providers),
         'type' => 'setting',
       ),
     ),
+  );
+
+  $form['notes'] = array(
+    '#markup' => '
+      <ul>
+        <li>Limit File uploads to 3 files.</li>
+        <li>Combine "supporting documentation" and file upload fields?</li>
+      </ul>
+    ',
   );
 
   $form['type'] = array(
@@ -59,10 +69,13 @@ function form_experiments_08($form, &$form_state) {
 
   $form['date'] = array(
     '#type' => 'date_popup',
+    '#timepicker' => 'timepicker',
     '#title' => t('Date'),
+    '#title_display' => 'invisible',
     '#date_format' => 'm/d/Y',
     '#attributes' => array('placeholder' => t('MM/DD/YYYY')),
     //'#required' => TRUE,
+
   );
 
   $form['credits'] = array(
@@ -94,6 +107,7 @@ function form_experiments_08($form, &$form_state) {
       '#type' => 'submit',
       '#value' => t('Remove'),
       '#name' => 'remove_file_' . $file->fid,
+      '#limit_validation_errors' => array(),
       '#submit' => array('form_experiments_08_doc_remove'),
       '#ajax' => array(
         'callback' => 'form_experiments_08_doc_remove_callback',
@@ -114,6 +128,7 @@ function form_experiments_08($form, &$form_state) {
   $form['doc_upload']['upload'] = array(
     '#type' => 'submit',
     '#value' => t('Upload'),
+    '#limit_validation_errors' => array(),
     '#submit' => array('form_experiments_08_doc_upload'),
     '#ajax' => array(
       'callback' => 'form_experiments_08_doc_upload_callback',
@@ -138,6 +153,28 @@ function form_experiments_08($form, &$form_state) {
   );
 
   return $form;
+}
+
+
+/**
+ * Implements hook_element_info_alter().
+ *
+ * @todo Why do we need this function? It appears to work without it.
+ * @see date_popup docs: @link https://www.drupal.org/node/2495255 @endlink
+ * @link http://www.zyxware.com/articles/3546/drupal-7-how-to-remove-the-default-date-format-option-added-by-date-module @endlink
+ */
+function form_experiments_element_info_alter(&$type) {
+  if (isset($type['date_popup'])) {
+    $type['date_popup']['#process'][] = 'form_experiments_date_popup_process_alter';
+  }
+}
+
+/**
+ * Remove the description from date_popup.
+ */
+function form_experiments_date_popup_process_alter(&$element, &$form_state, $context) {
+  unset($element['date']['#description']);
+  return $element;
 }
 
 /**
@@ -176,7 +213,7 @@ function form_experiments_08_validate($form, &$form_state) {
     form_set_error('credits', 'Hours must be rounded to the nearest quarter-hour.');
   }
 
-  // @FIXME Why isn't this working?
+  // @todo: Is this the best place to do this? Use $form['#after_build' instead?
   form_experiments_08_set_inline_errors($form, $form_state);
 }
 
@@ -189,7 +226,7 @@ function form_experiments_08_validate($form, &$form_state) {
  *   A keyed array containing the current state of the form.
  */
 function form_experiments_08_set_inline_errors($form, &$form_state) {
-  //drupal_set_message('Set inline errors');
+  drupal_set_message('Set inline errors');
 
   // Get the form errors.
   $errors = form_get_errors();
@@ -204,7 +241,7 @@ function form_experiments_08_set_inline_errors($form, &$form_state) {
     foreach ($errors as $field => $error) {
       // Only process the field-associated errors, omit the page-level ones.
       if (array_key_exists($field, $form)) {
-        $form[$field]['#field_suffix'] = '<p class="help-block">' . $error . '</p>';
+        $form[$field]['#field_suffix'] = '<p class="help-block error">' . $error . '</p>';
 
         // Remove field-associated error messages from the page-level listing.
         unset($errors[$field]);
@@ -218,6 +255,9 @@ function form_experiments_08_set_inline_errors($form, &$form_state) {
       }
     }
   }
+
+  // @todo: Is this a valid thing to do? Can't find docs on it anywhere.
+  $form_state['complete form'] = $form;
 }
 
 /**
@@ -229,6 +269,8 @@ function form_experiments_08_set_inline_errors($form, &$form_state) {
  *   A keyed array containing the current state of the form.
  */
 function form_experiments_08_doc_remove($form, &$form_state) {
+  drupal_set_message('Doc Remove');
+
   $fid = $form_state['triggering_element']['#parents'][1];
   $file = $form_state['file_attachments'][$fid];
 
@@ -250,6 +292,7 @@ function form_experiments_08_doc_remove($form, &$form_state) {
  *   The updated portion of the form.
  */
 function form_experiments_08_doc_remove_callback($form, &$form_state) {
+  drupal_set_message('Doc Remove Callback');
   return $form['uploaded_docs'];
 }
 

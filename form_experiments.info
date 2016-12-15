@@ -2,3 +2,4 @@ name = Form Experiments
 description = Experiments with Drupal forms.
 core = 7.x
 
+dependencies[] = 'date:date_popup'
