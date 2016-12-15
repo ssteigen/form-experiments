@@ -39,6 +39,7 @@ function form_experiments_08($form, &$form_state) {
       <ul>
         <li>Limit File uploads to 3 files.</li>
         <li>Combine "supporting documentation" and file upload fields?</li>
+        <li>Move upload validation errors between uploaded files and file input.</li>
       </ul>
     ',
   );
@@ -307,6 +308,8 @@ function form_experiments_08_doc_remove_callback($form, &$form_state) {
 function form_experiments_08_doc_upload($form, &$form_state) {
   $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
   $file = file_save_upload('file', $validators);
+
+
 
   if ($file) {
     if (!isset($form_state['file_attachments'])) {
