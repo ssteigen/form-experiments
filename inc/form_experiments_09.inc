@@ -1,11 +1,11 @@
 <?php
 /**
  * @file
- * Functionality to support Form 08.
+ * Functionality to support Form 09.
  */
 
 /**
- * Builds Form 08.
+ * Builds Form 09.
  *
  * @param array $form
  *   An associative array containing the structure of the form.
@@ -15,7 +15,9 @@
  * @return mixed
  *   The renderable form array.
  */
-function form_experiments_08($form, &$form_state) {
+function form_experiments_09($form, &$form_state) {
+  drupal_set_message('Build form');
+
   $providers = array('Abby', 'Becky', 'Carissa', 'Daisy', 'Emma', 'Frida', 'Gretchen', 'Hannah', 'Ingrid');
 
   $form['#cache'] = FALSE;
@@ -23,9 +25,10 @@ function form_experiments_08($form, &$form_state) {
   $form['#attached'] = array(
     'library' => array(array('system', 'ui.autocomplete')),
     'js' => array(
-      drupal_get_path('module', 'form_experiments') . '/js/form_experiments_08.js',
+      drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
+      drupal_get_path('module', 'form_experiments') . '/js/form_experiments_09.js',
       array(
-        'data' => array('form_experiment_08_providers' => $providers),
+        'data' => array('form_experiment_09_providers' => $providers),
         'type' => 'setting',
       ),
     ),
@@ -34,13 +37,16 @@ function form_experiments_08($form, &$form_state) {
   $form['notes'] = array(
     '#markup' => '
       <ul>
+        <li>File upload breaks after invalid file attempt.
+          <ul>
+            <li>Auto-upload stops working.</li>
+            <li>Error message does not clear.</li>
+          </ul>
+        </li>
+        <li>Limit File uploads to 3 files.</li>
+        <li>Combine "supporting documentation" and file upload fields?</li>
         <li>Move upload validation errors between uploaded files and file input.</li>
         <li>Make sure form works for anonymous users.</li>
-        <li>Some file validation occurs client-side?</li>
-        <li>Sometimes .error class isn\'t applied to file field?</li>
-        <li>Need to add remove confirmation popup.</li>
-        <li>File names should be links to open the file in a new tab</li>
-        <li>File field should appear blank when upload completes (clear out last filename)</li>
       </ul>
     ',
   );
@@ -111,15 +117,15 @@ function form_experiments_08($form, &$form_state) {
       '#value' => t('Remove'),
       '#name' => 'remove_file_' . $file->fid,
       '#limit_validation_errors' => array(),
-      '#submit' => array('form_experiments_08_doc_remove'),
+      '#submit' => array('form_experiments_09_doc_remove'),
       '#ajax' => array(
-        'callback' => 'form_experiments_08_doc_remove_callback',
+        'callback' => 'form_experiments_09_doc_remove_callback',
         'wrapper' => 'js-ajax-elements-wrapper',
       ),
     );
   }
 
-  if (sizeof($uploaded_files) < 3) {
+  if (sizeOf($uploaded_files) < 3) {
     /* ADD A FILE */
     $form['uploaded_docs']['doc_upload'] = array(
       '#type' => 'fieldset',
@@ -133,13 +139,16 @@ function form_experiments_08($form, &$form_state) {
       '#type' => 'submit',
       '#value' => t('Upload'),
       '#limit_validation_errors' => array(),
-      '#submit' => array('form_experiments_08_doc_upload'),
+      '#submit' => array('form_experiments_09_doc_upload'),
       '#ajax' => array(
-        'callback' => 'form_experiments_08_doc_upload_callback',
+        'callback' => 'form_experiments_09_doc_upload_callback',
         'wrapper' => 'js-ajax-elements-wrapper',
       ),
     );
   }
+
+  // Empty the file upload errors.
+  $form_state['file_upload_errors'] = NULL;
 
   /* FORM ACTIONS */
   $form['form-actions'] = array(
@@ -149,12 +158,12 @@ function form_experiments_08($form, &$form_state) {
   $form['form-actions']['cancel'] = array(
     '#type' => 'submit',
     '#value' => t('Cancel'),
-    '#submit' => array('form_experiments_08_cancel'),
+    '#submit' => array('form_experiments_09_cancel'),
   );
   $form['form-actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
-    '#submit' => array('form_experiments_08_submit'),
+    '#submit' => array('form_experiments_09_submit'),
   );
 
   return $form;
@@ -190,7 +199,9 @@ function form_experiments_date_popup_process_alter(&$element, &$form_state, $con
  * @param array $form_state
  *   A keyed array containing the current state of the form.
  */
-function form_experiments_08_validate($form, &$form_state) {
+function form_experiments_09_validate($form, &$form_state) {
+  drupal_set_message('Validate');
+
   $provider = $form_state['values']['provider'];
   if (!empty($provider) && strlen($provider) < 2) {
     form_set_error('provider', 'Provider must contain at least two characters');
@@ -215,6 +226,52 @@ function form_experiments_08_validate($form, &$form_state) {
   if (!empty($hours) && fmod(floatval($hours), floatval(0.25)) != 0) {
     form_set_error('credits', 'Hours must be rounded to the nearest quarter-hour.');
   }
+
+  // @todo: Is this the best place to do this? Use $form['#after_build' instead?
+  form_experiments_09_set_inline_errors($form, $form_state);
+}
+
+/**
+ * Set inline form errors.
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param array $form_state
+ *   A keyed array containing the current state of the form.
+ */
+function form_experiments_09_set_inline_errors($form, &$form_state) {
+  drupal_set_message('Set inline errors');
+
+  // Get the form errors.
+  $errors = form_get_errors();
+
+  // If there are any errors, iterate over them
+  // and add them to the appropriate form element.
+  if (isset($errors)) {
+    // Clear error messages.
+    drupal_get_messages('error');
+
+    // Add field-associated error messages to their appropriate fields.
+    foreach ($errors as $field => $error) {
+      // Only process the field-associated errors, omit the page-level ones.
+      if (array_key_exists($field, $form)) {
+        $form[$field]['#field_suffix'] = '<p class="help-block error">' . $error . '</p>';
+
+        // Remove field-associated error messages from the page-level listing.
+        unset($errors[$field]);
+      }
+    }
+
+    // If there are page-level errors left, add them back as page-level errors.
+    if (count($errors) > 0) {
+      foreach ($errors as $field => $error) {
+        drupal_set_message($error, 'error');
+      }
+    }
+  }
+
+  // @todo: Is this a valid thing to do? Can't find docs on it anywhere.
+  $form_state['complete form'] = $form;
 }
 
 /**
@@ -225,15 +282,15 @@ function form_experiments_08_validate($form, &$form_state) {
  * @param array $form_state
  *   A keyed array containing the current state of the form.
  */
-function form_experiments_08_doc_remove($form, &$form_state) {
-  $field_id = $form_state['triggering_element']['#parents'][0];
+function form_experiments_09_doc_remove($form, &$form_state) {
+  drupal_set_message('Doc Remove');
 
+  $field_id = $form_state['triggering_element']['#parents'][0];
   $fid = str_replace("remove_file_", '', $field_id);
 
   $file = $form_state['file_attachments'][$fid];
 
   unset($form_state['file_attachments'][$fid]);
-
   file_delete($file);
 
   $form_state['rebuild'] = TRUE;
@@ -250,7 +307,8 @@ function form_experiments_08_doc_remove($form, &$form_state) {
  * @return mixed
  *   The updated portion of the form.
  */
-function form_experiments_08_doc_remove_callback($form, &$form_state) {
+function form_experiments_09_doc_remove_callback($form, &$form_state) {
+  drupal_set_message('Doc Remove Callback');
   return $form['uploaded_docs'];
 }
 
@@ -262,14 +320,27 @@ function form_experiments_08_doc_remove_callback($form, &$form_state) {
  * @param array $form_state
  *   A keyed array containing the current state of the form.
  */
-function form_experiments_08_doc_upload($form, &$form_state) {
-  $validators = array(
-    'file_validate_extensions' => array('doc docx gif jpeg jpg odt pdf png tif tiff'),
-    'file_validate_size' => array(6291456),
-  );
+function form_experiments_09_doc_upload($form, &$form_state) {
+  $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
+
+  // Dump out the error messages.
+  $all_errors = drupal_get_messages('error');
 
   // Try to upload the file.
   $file = file_save_upload('file', $validators);
+
+  // Dump the errors again. These should only pertain to file upload.
+  $file_save_error = drupal_get_messages('error');
+
+  // Store the file upload-related errors.
+  if ($file_save_error) {
+    $form_state['file_upload_errors'] = $file_save_error;
+  }
+
+  // Put any other errors back.
+  if ($all_errors) {
+    drupal_set_message('<pre>' . print_r($all_errors, TRUE) . '</pre>');
+  }
 
   if ($file) {
     if (!isset($form_state['file_attachments'])) {
@@ -295,7 +366,15 @@ function form_experiments_08_doc_upload($form, &$form_state) {
  * @return mixed
  *   The updated portion of the form.
  */
-function form_experiments_08_doc_upload_callback($form, &$form_state) {
+function form_experiments_09_doc_upload_callback($form, &$form_state) {
+  // Attach the file-related errors to the file field.
+  // @todo: What if there are multiple file errors?
+  // @todo: WHat if the message isn't of type 'error'?
+  // @todo: Is this the correct place to do this?
+  if (isset($form_state['file_upload_errors'])) {
+    $form['uploaded_docs']['doc_upload']['#suffix'] = '<p class="help-block error">' . $form_state['file_upload_errors']['error'][0] . '</p>';
+  }
+
   return $form['uploaded_docs'];
 }
 
@@ -307,7 +386,7 @@ function form_experiments_08_doc_upload_callback($form, &$form_state) {
  * @param array $form_state
  *   A keyed array containing the current state of the form.
  */
-function form_experiments_08_submit($form, &$form_state) {
+function form_experiments_09_submit($form, &$form_state) {
   drupal_set_message('Submit form');
 }
 
@@ -319,6 +398,6 @@ function form_experiments_08_submit($form, &$form_state) {
  * @param array $form_state
  *   A keyed array containing the current state of the form.
  */
-function form_experiments_08_cancel($form, &$form_state) {
+function form_experiments_09_cancel($form, &$form_state) {
   drupal_set_message('Cancel form');
 }

@@ -5,29 +5,29 @@
  */
 
 (function ($) {
-  /**
-   * Automatic upload behavior for file fields.
-   *
-   * Copied from AutoUpload module. Slightly modified.
-   *
-   * @see https://www.drupal.org/project/autoupload
-   */
-  Drupal.behaviors.fileAutoUpload = {
-    attach: function(context, settings) {
-      $('.auto-upload input.form-submit[value=Upload]', context).hide();
-      $('.auto-upload input.form-file', context).change(function() {
-        var $parent = $(this).closest('.fieldset-wrapper');
-
-        //setTimeout to allow for validation
-        //would prefer an event, but there isn't one
-        setTimeout(function() {
-          if(!$('.error', $parent).length) {
-            $('input.form-submit[value=Upload]', $parent).mousedown();
-          }
-        }, 100);
-      });
-    }
-  };
+  // /**
+  //  * Automatic upload behavior for file fields.
+  //  *
+  //  * Copied from AutoUpload module. Slightly modified.
+  //  *
+  //  * @see https://www.drupal.org/project/autoupload
+  //  */
+  // Drupal.behaviors.fileAutoUpload = {
+  //   attach: function(context, settings) {
+  //     $('.auto-upload input.form-submit[value=Upload]', context).hide();
+  //     $('.auto-upload input.form-file', context).change(function() {
+  //       var $parent = $(this).closest('.fieldset-wrapper');
+  //
+  //       //setTimeout to allow for validation
+  //       //would prefer an event, but there isn't one
+  //       setTimeout(function() {
+  //         if(!$('.error', $parent).length) {
+  //           $('input.form-submit[value=Upload]', $parent).mousedown();
+  //         }
+  //       }, 100);
+  //     });
+  //   }
+  // };
 
   Drupal.behaviors.managedFileConfirmRemove = {
     attach: function(context, settings) {
