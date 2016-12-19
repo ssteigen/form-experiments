@@ -69,6 +69,15 @@ function form_experiments_menu() {
     'file' => 'inc/form_experiments_06.inc',
   );
 
+  $items['form-experiments/07'] = array(
+    'title' => t('Form 07'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('form_experiments_07'),
+    'access callback' => TRUE,
+    'description' => t('Form Experiments 07'),
+    'file' => 'inc/form_experiments_07.inc',
+  );
+
   $items['form-experiments/08'] = array(
     'title' => t('Form 08'),
     'page callback' => 'drupal_get_form',
