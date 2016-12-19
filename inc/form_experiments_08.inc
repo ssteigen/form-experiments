@@ -37,9 +37,16 @@ function form_experiments_08($form, &$form_state) {
   $form['notes'] = array(
     '#markup' => '
       <ul>
+        <li>File upload breaks after invalid file attempt.
+          <ul>
+            <li>Auto-upload stops working.</li>
+            <li>Error message does not clear.</li>
+          </ul>
+        </li>
         <li>Limit File uploads to 3 files.</li>
         <li>Combine "supporting documentation" and file upload fields?</li>
         <li>Move upload validation errors between uploaded files and file input.</li>
+        <li>Make sure form works for anonymous users.</li>
       </ul>
     ',
   );
@@ -95,16 +102,17 @@ function form_experiments_08($form, &$form_state) {
     '#prefix' => '<div id="js-ajax-elements-wrapper">',
     '#suffix' => '</div>',
   );
+
   $uploaded_files = isset($form_state['file_attachments']) ? $form_state['file_attachments'] : array();
   foreach ($uploaded_files as $fid => $file) {
     $form['uploaded_docs'][$fid] = array(
       '#type' => 'fieldset',
-      '#tree' => TRUE,
+      '#tree' => FALSE,
     );
-    $form['uploaded_docs'][$fid]['filename'] = array(
+    $form['uploaded_docs'][$fid]['filename_' . $fid] = array(
       '#markup' => drupal_basename($file->filename),
     );
-    $form['uploaded_docs'][$fid]['remove_file'] = array(
+    $form['uploaded_docs'][$fid]['remove_file_' . $fid] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
       '#name' => 'remove_file_' . $file->fid,
@@ -117,25 +125,30 @@ function form_experiments_08($form, &$form_state) {
     );
   }
 
-  /* ADD A FILE */
-  $form['doc_upload'] = array(
-    '#type' => 'fieldset',
-    '#tree' => FALSE,
-    '#attributes' => array('class' => array('auto-upload')),
-  );
-  $form['doc_upload']['file'] = array(
-    '#type' => 'file',
-  );
-  $form['doc_upload']['upload'] = array(
-    '#type' => 'submit',
-    '#value' => t('Upload'),
-    '#limit_validation_errors' => array(),
-    '#submit' => array('form_experiments_08_doc_upload'),
-    '#ajax' => array(
-      'callback' => 'form_experiments_08_doc_upload_callback',
-      'wrapper' => 'js-ajax-elements-wrapper',
-    ),
-  );
+  if (sizeOf($uploaded_files) < 3) {
+    /* ADD A FILE */
+    $form['uploaded_docs']['doc_upload'] = array(
+      '#type' => 'fieldset',
+      '#tree' => FALSE,
+      '#attributes' => array('class' => array('auto-upload')),
+    );
+    $form['uploaded_docs']['doc_upload']['file'] = array(
+      '#type' => 'file',
+    );
+    $form['uploaded_docs']['doc_upload']['upload'] = array(
+      '#type' => 'submit',
+      '#value' => t('Upload'),
+      '#limit_validation_errors' => array(),
+      '#submit' => array('form_experiments_08_doc_upload'),
+      '#ajax' => array(
+        'callback' => 'form_experiments_08_doc_upload_callback',
+        'wrapper' => 'js-ajax-elements-wrapper',
+      ),
+    );
+  }
+
+  // Empty the file upload errors.
+  $form_state['file_upload_errors'] = NULL;
 
   /* FORM ACTIONS */
   $form['form-actions'] = array(
@@ -272,7 +285,9 @@ function form_experiments_08_set_inline_errors($form, &$form_state) {
 function form_experiments_08_doc_remove($form, &$form_state) {
   drupal_set_message('Doc Remove');
 
-  $fid = $form_state['triggering_element']['#parents'][1];
+  $field_id = $form_state['triggering_element']['#parents'][0];
+  $fid = str_replace("remove_file_", '', $field_id);
+
   $file = $form_state['file_attachments'][$fid];
 
   unset($form_state['file_attachments'][$fid]);
@@ -307,9 +322,25 @@ function form_experiments_08_doc_remove_callback($form, &$form_state) {
  */
 function form_experiments_08_doc_upload($form, &$form_state) {
   $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
+
+  // Dump out the error messages.
+  $all_errors = drupal_get_messages('error');
+
+  // Try to upload the file.
   $file = file_save_upload('file', $validators);
 
+  // Dump the errors again. These should only pertain to file upload.
+  $file_save_error = drupal_get_messages('error');
 
+  // Store the file upload-related errors.
+  if ($file_save_error) {
+    $form_state['file_upload_errors'] = $file_save_error;
+  }
+
+  // Put any other errors back.
+  if ($all_errors) {
+    drupal_set_message('<pre>' . print_r($all_errors, TRUE) . '</pre>');
+  }
 
   if ($file) {
     if (!isset($form_state['file_attachments'])) {
@@ -336,6 +367,14 @@ function form_experiments_08_doc_upload($form, &$form_state) {
  *   The updated portion of the form.
  */
 function form_experiments_08_doc_upload_callback($form, &$form_state) {
+  // Attach the file-related errors to the file field.
+  // @todo: What if there are multiple file errors?
+  // @todo: WHat if the message isn't of type 'error'?
+  // @todo: Is this the correct place to do this?
+  if (isset($form_state['file_upload_errors'])) {
+    $form['uploaded_docs']['doc_upload']['#suffix'] = '<p class="help-block error">' . $form_state['file_upload_errors']['error'][0] . '</p>';
+  }
+
   return $form['uploaded_docs'];
 }
 
