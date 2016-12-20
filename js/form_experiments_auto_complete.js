@@ -1,8 +1,11 @@
+/**
+ * Auto-complete for the provider text field.
+ */
 (function ($) {
   Drupal.behaviors.autocompleteProviders = {
     attach: function (context, settings) {
       $("#edit-provider", context).autocomplete({
-        source: Drupal.settings.form_experiment_07_providers
+        source: Drupal.settings.form_experiment_providers
       });
     }
   };

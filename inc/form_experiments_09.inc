@@ -25,10 +25,10 @@ function form_experiments_09($form, &$form_state) {
   $form['#attached'] = array(
     'library' => array(array('system', 'ui.autocomplete')),
     'js' => array(
-      drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
-      drupal_get_path('module', 'form_experiments') . '/js/form_experiments_09.js',
+      drupal_get_path('module', 'form_experiments') . '/js/form_experiments_auto_upload.js',
+      drupal_get_path('module', 'form_experiments') . '/js/form_experiments_auto_complete.js',
       array(
-        'data' => array('form_experiment_09_providers' => $providers),
+        'data' => array('form_experiment_providers' => $providers),
         'type' => 'setting',
       ),
     ),
