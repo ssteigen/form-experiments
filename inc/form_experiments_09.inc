@@ -16,8 +16,6 @@
  *   The renderable form array.
  */
 function form_experiments_09($form, &$form_state) {
-  drupal_set_message('Build form');
-
   $providers = array('Abby', 'Becky', 'Carissa', 'Daisy', 'Emma', 'Frida', 'Gretchen', 'Hannah', 'Ingrid');
 
   $form['#cache'] = FALSE;
@@ -34,18 +32,13 @@ function form_experiments_09($form, &$form_state) {
     ),
   );
 
+  $form['description'] = array(
+    '#markup' => '<h1>Inline form errors</h1>',
+  );
+
   $form['notes'] = array(
     '#markup' => '
       <ul>
-        <li>File upload breaks after invalid file attempt.
-          <ul>
-            <li>Auto-upload stops working.</li>
-            <li>Error message does not clear.</li>
-          </ul>
-        </li>
-        <li>Limit File uploads to 3 files.</li>
-        <li>Combine "supporting documentation" and file upload fields?</li>
-        <li>Move upload validation errors between uploaded files and file input.</li>
         <li>Make sure form works for anonymous users.</li>
       </ul>
     ',
@@ -125,7 +118,9 @@ function form_experiments_09($form, &$form_state) {
     );
   }
 
-  if (sizeOf($uploaded_files) < 3) {
+  // If less than 3 files have been uploaded so far,
+  // render the file upload fieldset.
+  if (sizeof($uploaded_files) < 3) {
     /* ADD A FILE */
     $form['uploaded_docs']['doc_upload'] = array(
       '#type' => 'fieldset',
@@ -200,8 +195,6 @@ function form_experiments_date_popup_process_alter(&$element, &$form_state, $con
  *   A keyed array containing the current state of the form.
  */
 function form_experiments_09_validate($form, &$form_state) {
-  drupal_set_message('Validate');
-
   $provider = $form_state['values']['provider'];
   if (!empty($provider) && strlen($provider) < 2) {
     form_set_error('provider', 'Provider must contain at least two characters');
@@ -227,7 +220,7 @@ function form_experiments_09_validate($form, &$form_state) {
     form_set_error('credits', 'Hours must be rounded to the nearest quarter-hour.');
   }
 
-  // @todo: Is this the best place to do this? Use $form['#after_build' instead?
+  // @todo: Is this the best place for this? Use $form['#after_build'] instead?
   form_experiments_09_set_inline_errors($form, $form_state);
 }
 
@@ -240,8 +233,6 @@ function form_experiments_09_validate($form, &$form_state) {
  *   A keyed array containing the current state of the form.
  */
 function form_experiments_09_set_inline_errors($form, &$form_state) {
-  drupal_set_message('Set inline errors');
-
   // Get the form errors.
   $errors = form_get_errors();
 
@@ -271,6 +262,8 @@ function form_experiments_09_set_inline_errors($form, &$form_state) {
   }
 
   // @todo: Is this a valid thing to do? Can't find docs on it anywhere.
+  // For some reason, the page is rendering form state's complete form,
+  // rather than the form array.
   $form_state['complete form'] = $form;
 }
 
@@ -283,8 +276,6 @@ function form_experiments_09_set_inline_errors($form, &$form_state) {
  *   A keyed array containing the current state of the form.
  */
 function form_experiments_09_doc_remove($form, &$form_state) {
-  drupal_set_message('Doc Remove');
-
   $field_id = $form_state['triggering_element']['#parents'][0];
   $fid = str_replace("remove_file_", '', $field_id);
 
@@ -308,7 +299,6 @@ function form_experiments_09_doc_remove($form, &$form_state) {
  *   The updated portion of the form.
  */
 function form_experiments_09_doc_remove_callback($form, &$form_state) {
-  drupal_set_message('Doc Remove Callback');
   return $form['uploaded_docs'];
 }
 
@@ -323,6 +313,7 @@ function form_experiments_09_doc_remove_callback($form, &$form_state) {
 function form_experiments_09_doc_upload($form, &$form_state) {
   $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
 
+  // @todo: Is there a better way to retrieve file-specific error messages?
   // Dump out the error messages.
   $all_errors = drupal_get_messages('error');
 
@@ -338,6 +329,7 @@ function form_experiments_09_doc_upload($form, &$form_state) {
   }
 
   // Put any other errors back.
+  // @todo: Fix this.
   if ($all_errors) {
     drupal_set_message('<pre>' . print_r($all_errors, TRUE) . '</pre>');
   }
@@ -369,7 +361,7 @@ function form_experiments_09_doc_upload($form, &$form_state) {
 function form_experiments_09_doc_upload_callback($form, &$form_state) {
   // Attach the file-related errors to the file field.
   // @todo: What if there are multiple file errors?
-  // @todo: WHat if the message isn't of type 'error'?
+  // @todo: What if the message isn't of type 'error'?
   // @todo: Is this the correct place to do this?
   if (isset($form_state['file_upload_errors'])) {
     $form['uploaded_docs']['doc_upload']['#suffix'] = '<p class="help-block error">' . $form_state['file_upload_errors']['error'][0] . '</p>';
