@@ -12,6 +12,20 @@
  * @see https://www.drupal.org/project/autoupload
  */
 (function ($) {
+  Drupal.behaviors.dateIconPopup = {
+    attach: function(context, settings) {
+    //   var date_form_group = $('.form-item-datetime-date', context);
+    //
+    //   $('a.btn', date_form_group).click(function(e) {
+    //     console.log('clicka lakjsdlfjskdfs');
+    //     e.preventDefault();
+    //     console.log($(this).closest('div').find('#edit-datetime-datepicker-popup-0'));
+    //
+    //     $(this).closest('div').find('#edit-datetime-datepicker-popup-0').trigger('click');
+    //   });
+    }
+  };
+
   // Drupal.behaviors.managedFileAutoUpload = {
   //   attach: function(context, settings) {
   //     $('.form-item input.form-submit[value=Upload]', context).hide();

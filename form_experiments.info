@@ -3,3 +3,7 @@ description = Experiments with Drupal forms.
 core = 7.x
 
 dependencies[] = 'date:date_popup'
+
+scripts[] = 'form_experiments.js'
+
+stylesheets[all][] = 'form_experiments.css'
