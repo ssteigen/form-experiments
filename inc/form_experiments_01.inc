@@ -1,8 +1,16 @@
 <?php
 
 function form_experiments_01() {
-  $form['#attached']['js'] = array(
-    drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
+  $form['summary'] = array(
+    '#markup' => 'Multiple Managed File Fields',
+    '#prefix' => '<p class="lead">',
+    '#suffix' => '</p>',
+  );
+
+  $form['description'] = array(
+    '#markup' => 'Each managed file field allows one upload',
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
   );
 
   $form['managed_files'] = array(
