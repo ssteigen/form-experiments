@@ -2,14 +2,42 @@
 
 function form_experiments_02($form, &$form_state) {
 
+  $form['summary'] = array(
+    '#markup' => 'Multi-File Upload with Thumbnails',
+    '#prefix' => '<p class="lead">',
+    '#suffix' => '</p>',
+  );
+
+  $form['description'] = array(
+    '#markup' => 'Single file field supports uploading several files',
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+  );
+
   $form['ajax-wrapper'] = array(
     '#prefix' => '<div id="ajax-wrapper">',
     '#suffix' => '</div>',
   );
 
   $form['ajax-wrapper']['uploaded-files'] = array(
-    '#markup' => '',
+    '#prefix' => '<div class="row">',
+    '#suffix' => '</div>',
   );
+
+  $form_state['files'] = (isset($form_state['files']) ? $form_state['files'] : array());
+
+  foreach ($form_state['files'] as $file) {
+    $form['ajax-wrapper']['uploaded-files'][$file->fid] = array(
+      '#markup' => '
+        <div class="thumbnail">
+          <img class="img-responsive" src="/sites/default/files/' . $file->filename . '" />
+          <div class="caption"><p>' . $file->filename  . '</p></div>
+        </div>
+      ',
+      '#prefix' => '<div class="col-xs-6 col-sm-4">',
+      '#suffix' => '</div>',
+    );
+  }
 
   $form['file'] = array(
     '#type' => 'file',
@@ -17,7 +45,7 @@ function form_experiments_02($form, &$form_state) {
 
   $form['upload'] = array(
     '#type' => 'submit',
-    '#value' => 'upload',
+    '#value' => 'Upload',
     '#submit' => array('form_experiments_02_ajax_callback'),
     '#ajax' => array(
       'callback' => 'form_experiments_02_ajax_callback',
@@ -30,17 +58,16 @@ function form_experiments_02($form, &$form_state) {
   return $form;
 }
 
-function form_experiments_02_ajax_callback($form, $form_state) {
-  $file = file_save_upload('file', array('file_validate_extensions' => array('png gif jpg jpeg')), "public://", $replace = FILE_EXISTS_REPLACE);
+function form_experiments_02_ajax_callback($form, &$form_state) {
+  $file = file_save_upload('file', array('file_validate_extensions' => array('png gif jpg jpeg')), "public://", FILE_EXISTS_REPLACE);
 
   if ($file) {
     $file->status = FILE_STATUS_PERMANENT;
     file_save($file);
 
-    $form['ajax-wrapper']['uploaded-files']['#markup'] = '<p>Preview:</p><img src="/sites/default/files/' . $file->filename . '" style="max-width: 250px; max-height: 250px;" />';
-  }
-  else {
-    drupal_set_message('No file uploaded.');
+    $form_state['files'][] = $file;
+
+    $form_state['rebuild'] = TRUE;
   }
 
   return $form['ajax-wrapper'];
