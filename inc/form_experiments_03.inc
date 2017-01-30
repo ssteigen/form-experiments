@@ -2,13 +2,23 @@
 
 function form_experiments_03($form, &$form_state) {
 
+  $form['summary'] = array(
+    '#markup' => 'Multi-File Upload with Thumbnails',
+    '#prefix' => '<p class="lead">',
+    '#suffix' => '</p>',
+  );
+
+  $form['description']['#markup'] = '<p>Single file field supports uploading several files</p>';
+  $form['description']['#markup'] .= '<p>Renders uploaded files in the ajax callback (not best practice?)</p>';
+
   $form['ajax-wrapper'] = array(
     '#prefix' => '<div id="ajax-wrapper">',
     '#suffix' => '</div>',
   );
 
   $form['ajax-wrapper']['uploaded-files'] = array(
-    '#markup' => '',
+    '#type' => 'container',
+    '#attributes' => array('class' => array('row')),
   );
 
   $form['file'] = array(
@@ -33,20 +43,29 @@ function form_experiments_03($form, &$form_state) {
 function form_experiments_03_submit($form, &$form_state) {
   $file = file_save_upload('file', array('file_validate_extensions' => array('png gif jpg jpeg')), "public://", $replace = FILE_EXISTS_REPLACE);
   if ($file) {
-    
-    drupal_set_message('<pre>' . print_r($file, TRUE) . '</pre>');
     $file->status = FILE_STATUS_PERMANENT;
     file_save($file);
-    $form_state['files'][] = $file->filename;
+    $form_state['files'][] = $file;
   }
   else {
-//    drupal_set_message('No file uploaded.');
+    drupal_set_message('No file uploaded.');
   }
 }
 
 function form_experiments_03_ajax_callback($form, &$form_state) {
   if (isset($form_state['files'])) {
-    $form['ajax-wrapper']['uploaded-files']['#markup'] = implode('<br/>', $form_state['files']);
+    foreach ($form_state['files'] as $file) {
+      $form['ajax-wrapper']['uploaded-files'][$file->fid] = array(
+        '#markup' => '
+        <div class="thumbnail">
+          <img class="img-responsive" src="/sites/default/files/' . $file->filename . '" />
+          <div class="caption"><p>' . $file->filename  . '</p></div>
+        </div>
+      ',
+        '#prefix' => '<div class="col-xs-6 col-sm-4">',
+        '#suffix' => '</div>',
+      );
+    }
   }
 
   return $form['ajax-wrapper'];
