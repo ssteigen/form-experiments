@@ -1,86 +1,78 @@
 <?php
-function form_experiments_ajax_dynamic($form, &$form_state) {
-  $form['field_container'] = [
-    '#type' => 'container',
-    '#weight' => 80,
-    '#tree' => TRUE,
-    // Set up the wrapper so that AJAX will be able to replace the fieldset.
-    '#prefix' => '<div id="js-ajax-elements-wrapper">',
-    '#suffix' => '</div>',
-  ];
+function form_experiments_04($form, &$form_state) {
+  $form['summary'] = array(
+    '#markup' => 'Ajax Add/Remove Form Item',
+    '#prefix' => '<p class="lead">',
+    '#suffix' => '</p>',
+  );
 
-  $form_state['field_deltas'] = isset($form_state['field_deltas']) ? $form_state['field_deltas'] : range(0, 3);
+  $form['description']['#markup'] = '<p>Dynamically add and remove form fields</p>';
+  $form['description']['#markup'] .= '<p>Requires rebuild = TRUE</p>';
+
+  $form['ajax-wrapper'] = array(
+    '#tree' => TRUE,
+    '#prefix' => '<div id="ajax-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  $form_state['field_deltas'] = isset($form_state['field_deltas']) ? $form_state['field_deltas'] : range(0, 2);
 
   $field_count = $form_state['field_deltas'];
 
   foreach ($field_count as $delta) {
-    $form['field_container'][$delta] = [
+    $form['ajax-wrapper'][$delta] = array(
       '#type' => 'fieldset',
       '#tree' => TRUE,
-    ];
+    );
 
-    $form['field_container'][$delta]['field1'] = [
-      '#markup' => t('File ' . ($delta + 1)),
-    ];
+    $form['ajax-wrapper'][$delta]['field1'] = array(
+      '#markup' => t('Item ' . ($delta + 1)),
+    );
 
-    $form['field_container'][$delta]['remove_name'] = [
+    $form['ajax-wrapper'][$delta]['remove_name'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
-      '#submit' => ['form_experiments_ajax_dynamic_remove'],
-      '#attributes' => array(
-        'style' => 'float:right',
+      '#submit' => array('form_experiments_04_remove'),
+      '#attributes' => array('style' => 'float:right'),
+      '#ajax' => array(
+        'callback' => 'form_experiments_04_remove_callback',
+        'wrapper' => 'ajax-wrapper',
       ),
-      // See the examples in ajax_example.module for more details on the
-      // properties of #ajax.
-      '#ajax' => [
-        'callback' => 'form_experiments_ajax_dynamic_remove_callback',
-        'wrapper' => 'js-ajax-elements-wrapper',
-      ],
       '#name' => 'remove_name_' . $delta,
-    ];
+    );
   }
 
-  $form['field_container']['add_name'] = [
+  $form['ajax-wrapper']['add_name'] = array(
     '#type' => 'submit',
     '#value' => t('Add one more'),
-    '#submit' => ['form_experiments_ajax_dynamic_add_one'],
-    // See the examples in ajax_example.module for more details on the
-    // properties of #ajax.
-    '#ajax' => [
-      'callback' => 'form_experiments_ajax_dynamic_add_one_callback',
-      'wrapper' => 'js-ajax-elements-wrapper',
-    ],
-    '#weight' => 100,
-  ];
-
-  $form['other_field'] = [
-    '#type' => 'textfield',
-    '#title' => t('Other field'),
-  ];
+    '#submit' => array('form_experiments_04_add_one'),
+    '#ajax' => array(
+      'callback' => 'form_experiments_04_add_one_callback',
+      'wrapper' => 'ajax-wrapper',
+    ),
+  );
 
   return $form;
 }
 
-function form_experiments_ajax_dynamic_remove($form, &$form_state) {
+function form_experiments_04_remove($form, &$form_state) {
   $delta_remove = $form_state['triggering_element']['#parents'][1];
   $k = array_search($delta_remove, $form_state['field_deltas']);
   unset($form_state['field_deltas'][$k]);
 
   $form_state['rebuild'] = TRUE;
-  drupal_get_messages();
 }
 
-function form_experiments_ajax_dynamic_remove_callback($form, &$form_state) {
-  return $form['field_container'];
+function form_experiments_04_remove_callback($form, &$form_state) {
+  return $form['ajax-wrapper'];
 }
 
-function form_experiments_ajax_dynamic_add_one($form, &$form_state) {
+function form_experiments_04_add_one($form, &$form_state) {
   $form_state['field_deltas'][] = count($form_state['field_deltas']) > 0 ? max($form_state['field_deltas']) + 1 : 0;
 
   $form_state['rebuild'] = TRUE;
-  drupal_get_messages();
 }
 
-function form_experiments_ajax_dynamic_add_one_callback($form, $form_state) {
-  return $form['field_container'];
+function form_experiments_04_add_one_callback($form, $form_state) {
+  return $form['ajax-wrapper'];
 }
