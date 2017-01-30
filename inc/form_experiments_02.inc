@@ -8,11 +8,9 @@ function form_experiments_02($form, &$form_state) {
     '#suffix' => '</p>',
   );
 
-  $form['description'] = array(
-    '#markup' => 'Single file field supports uploading several files',
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
-  );
+  $form['description']['#markup'] = '<p>Single file field supports uploading several files</p>';
+  $form['description']['#markup'] .= '<p>Requires rebuild = TRUE</p>';
+  $form['description']['#markup'] .= '<p>Renders uploaded files when building the form</p>';
 
   $form['ajax-wrapper'] = array(
     '#prefix' => '<div id="ajax-wrapper">',
@@ -20,8 +18,8 @@ function form_experiments_02($form, &$form_state) {
   );
 
   $form['ajax-wrapper']['uploaded-files'] = array(
-    '#prefix' => '<div class="row">',
-    '#suffix' => '</div>',
+    '#type' => 'container',
+    '#attributes' => array('class' => 'row'),
   );
 
   $form_state['files'] = (isset($form_state['files']) ? $form_state['files'] : array());
