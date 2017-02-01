@@ -11,12 +11,12 @@ function form_experiments_03($form, &$form_state) {
   $form['description']['#markup'] = '<p>Single file field supports uploading several files</p>';
   $form['description']['#markup'] .= '<p>Renders uploaded files in the ajax callback (not best practice?)</p>';
 
-  $form['ajax-wrapper'] = array(
+  $form['ajax_wrapper'] = array(
     '#prefix' => '<div id="ajax-wrapper">',
     '#suffix' => '</div>',
   );
 
-  $form['ajax-wrapper']['uploaded-files'] = array(
+  $form['ajax_wrapper']['uploaded-files'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('row')),
   );
@@ -55,7 +55,7 @@ function form_experiments_03_submit($form, &$form_state) {
 function form_experiments_03_ajax_callback($form, &$form_state) {
   if (isset($form_state['files'])) {
     foreach ($form_state['files'] as $file) {
-      $form['ajax-wrapper']['uploaded-files'][$file->fid] = array(
+      $form['ajax_wrapper']['uploaded-files'][$file->fid] = array(
         '#markup' => '
         <div class="thumbnail">
           <img class="img-responsive" src="/sites/default/files/' . $file->filename . '" />
@@ -68,7 +68,7 @@ function form_experiments_03_ajax_callback($form, &$form_state) {
     }
   }
 
-  return $form['ajax-wrapper'];
+  return $form['ajax_wrapper'];
 }
 
 
