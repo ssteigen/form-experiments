@@ -9,7 +9,7 @@ function form_experiments_04($form, &$form_state) {
   $form['description']['#markup'] = '<p>Dynamically add and remove form fields</p>';
   $form['description']['#markup'] .= '<p>Requires rebuild = TRUE</p>';
 
-  $form['ajax-wrapper'] = array(
+  $form['ajax_wrapper'] = array(
     '#tree' => TRUE,
     '#prefix' => '<div id="ajax-wrapper">',
     '#suffix' => '</div>',
@@ -20,20 +20,20 @@ function form_experiments_04($form, &$form_state) {
   $field_count = $form_state['field_deltas'];
 
   foreach ($field_count as $delta) {
-    $form['ajax-wrapper'][$delta] = array(
+    $form['ajax_wrapper'][$delta] = array(
       '#type' => 'fieldset',
       '#tree' => TRUE,
     );
 
-    $form['ajax-wrapper'][$delta]['field1'] = array(
+    $form['ajax_wrapper'][$delta]['item'] = array(
       '#markup' => t('Item ' . ($delta + 1)),
     );
 
-    $form['ajax-wrapper'][$delta]['remove_name'] = array(
+    $form['ajax_wrapper'][$delta]['remove_one'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
       '#submit' => array('form_experiments_04_remove'),
-      '#attributes' => array('style' => 'float:right'),
+      '#attributes' => array('class' => array('btn-xs', 'pull-right')),
       '#ajax' => array(
         'callback' => 'form_experiments_04_remove_callback',
         'wrapper' => 'ajax-wrapper',
@@ -42,7 +42,7 @@ function form_experiments_04($form, &$form_state) {
     );
   }
 
-  $form['ajax-wrapper']['add_name'] = array(
+  $form['ajax_wrapper']['add_one'] = array(
     '#type' => 'submit',
     '#value' => t('Add one more'),
     '#submit' => array('form_experiments_04_add_one'),
@@ -64,7 +64,7 @@ function form_experiments_04_remove($form, &$form_state) {
 }
 
 function form_experiments_04_remove_callback($form, &$form_state) {
-  return $form['ajax-wrapper'];
+  return $form['ajax_wrapper'];
 }
 
 function form_experiments_04_add_one($form, &$form_state) {
@@ -74,5 +74,5 @@ function form_experiments_04_add_one($form, &$form_state) {
 }
 
 function form_experiments_04_add_one_callback($form, $form_state) {
-  return $form['ajax-wrapper'];
+  return $form['ajax_wrapper'];
 }
