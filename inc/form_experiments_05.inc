@@ -1,99 +1,124 @@
 <?php
 function form_experiments_05($form, &$form_state) {
-  $form['#cache'] = false;
-  $form['field_container'] = [
+  //$form['#cache'] = FALSE; // Is this required?
+
+  $form['summary'] = array(
+    '#markup' => 'Multi-File Upload with Thumbnails',
+    '#prefix' => '<p class="lead">',
+    '#suffix' => '</p>',
+  );
+
+  $form['description']['#markup'] = '<p>Single file field supports uploading several files</p>';
+  $form['description']['#markup'] .= '<p>Requires rebuild = TRUE</p>';
+  $form['description']['#markup'] .= '<p>Renders uploaded files when building the form</p>';
+  $form['description']['#markup'] .= '<p>Image caption contains link to full-size image and button to delete image</p>';
+
+  $form['ajax_wrapper'] = array(
     '#type' => 'container',
-    '#weight' => 80,
-    '#tree' => TRUE,
-    // Set up the wrapper so that AJAX will be able to replace the fieldset.
-    '#prefix' => '<div id="js-ajax-elements-wrapper">',
-    '#suffix' => '</div>',
-  ];
+    '#tree' => FALSE,
+    '#attributes' => array('id' => 'ajax-wrapper'),
+  );
 
-  $uploaded_files = isset($form_state['file_attachments']) ? $form_state['file_attachments'] : [];
+  $files = isset($form_state['files']) ? $form_state['files'] : array();
 
-  foreach ($uploaded_files as $fid => $file) {
-    $form['field_container'][$fid] = [
-      '#type' => 'fieldset',
+  $form['ajax_wrapper']['files'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('row')),
+  );
+
+  foreach ($files as $file) {
+    $form['ajax_wrapper']['files'][$file->fid] = array(
+      '#type' => 'container',
       '#tree' => TRUE,
-    ];
+      '#attributes' => array('class' => array('col-xs-6', 'col-sm-4')),
+    );
 
-   $form['field_container'][$fid]['field1'] = [
-      '#markup' => drupal_basename($file->filename),
-    ];
+    $form['ajax_wrapper']['files'][$file->fid]['thumbnail'] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('thumbnail')),
+    );
 
-    $form['field_container'][$fid]['remove_file'] = [
+    $form['ajax_wrapper']['files'][$file->fid]['thumbnail']['image'] = array(
+      '#markup' => '<img class="img-responsive" src="/sites/default/files/' . $file->filename . '" />',
+    );
+
+    $form['ajax_wrapper']['files'][$file->fid]['thumbnail']['caption'] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('caption')),
+    );
+
+    $form['ajax_wrapper']['files'][$file->fid]['thumbnail']['caption']['filename'] = array(
+      '#markup' => '<a href="/sites/default/files/' . $file->filename . '">' . $file->filename  . '</a>',
+    );
+
+    $form['ajax_wrapper']['files'][$file->fid]['thumbnail']['caption']['button'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
-      '#submit' => ['form_experiments_05_remove'],
-      '#attributes' => array(
-        'style' => 'float:right',
+      '#submit' => array('form_experiments_05_remove_file'),
+      '#attributes' => array('class' => array('pull-right', 'btn-xs')),
+      '#ajax' => array(
+        'callback' => 'form_experiments_05_remove_file_callback',
+        'wrapper' => 'ajax-wrapper',
       ),
-      // See the examples in ajax_example.module for more details on the
-      // properties of #ajax.
-      '#ajax' => [
-        'callback' => 'form_experiments_05_remove_callback',
-        'wrapper' => 'js-ajax-elements-wrapper',
-      ],
       '#name' => 'remove_file_' . $file->fid,
-    ];
+    );
   }
 
-  $form['file_upload'] = [
+  $form['ajax_wrapper']['file_upload'] = array(
+    '#type' => 'fieldset',
+  );
+
+  $form['ajax_wrapper']['file_upload']['file'] = array(
     '#type' => 'file',
-  ];
+  );
 
-  $form['field_container']['add_name'] = [
+  $form['ajax_wrapper']['file_upload']['button'] = array(
     '#type' => 'submit',
-    '#value' => t('Add one more'),
-    '#submit' => ['form_experiments_05_add_one'],
-    // See the examples in ajax_example.module for more details on the
-    // properties of #ajax.
-    '#ajax' => [
-      'callback' => 'form_experiments_05_add_one_callback',
-      'wrapper' => 'js-ajax-elements-wrapper',
-    ],
-    '#weight' => 100,
-  ];
-
-  $form['other_field'] = [
-    '#type' => 'textfield',
-    '#title' => t('Other field'),
-  ];
+    '#value' => t('Add File'),
+    '#submit' => array('form_experiments_05_add_file'),
+    '#ajax' => array(
+      'callback' => 'form_experiments_05_add_file_callback',
+      'wrapper' => 'ajax-wrapper',
+    ),
+  );
 
   return $form;
 }
 
-function form_experiments_05_remove($form, &$form_state) {
-  $fid = $form_state['triggering_element']['#parents'][1];
-  $file = $form_state['file_attachments'][$fid];
+function form_experiments_05_remove_file($form, &$form_state) {
+  $fid = $form_state['triggering_element']['#parents'][0];
+  $file = $form_state['files'][$fid];
 
-  unset($form_state['file_attachments'][$fid]);
-  file_delete($file);
-
-  $form_state['rebuild'] = TRUE;
-}
-
-function form_experiments_05_remove_callback($form, &$form_state) {
-  return $form['field_container'];
-}
-
-function form_experiments_05_add_one($form, &$form_state) {
-  $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
-  $file = file_save_upload('file_upload', $validators);
-
-  if ($file) {
-    if (!isset($form_state['file_attachments'])) {
-      $form_state['file_attachments'] = [];
-    }
-
-    $form_state['file_attachments'][$file->fid] = $file;
-
-    // Only rebuild the form when a file passes validation and is uploaded correctly.
+  if (file_delete($file)) {
+    unset($form_state['files'][$fid]);
     $form_state['rebuild'] = TRUE;
+  }
+  else {
+    drupal_set_message('The file could not be deleted.', 'error');
   }
 }
 
-function form_experiments_05_add_one_callback($form, $form_state) {
-  return $form['field_container'];
+function form_experiments_05_remove_file_callback($form, &$form_state) {
+  return $form['ajax_wrapper'];
+}
+
+function form_experiments_05_add_file($form, &$form_state) {
+  $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
+  $file = file_save_upload('file', $validators);
+
+  if ($file) {
+    $file->status = FILE_STATUS_PERMANENT;
+    file_save($file);
+
+    $form_state['files'][$file->fid] = $file;
+
+    $form_state['rebuild'] = TRUE;
+  }
+  else {
+    drupal_set_message('No file uploaded.');
+  }
+}
+
+function form_experiments_05_add_file_callback($form, &$form_state) {
+  return $form['ajax_wrapper'];
 }
