@@ -12,12 +12,12 @@ function form_experiments_02($form, &$form_state) {
   $form['description']['#markup'] .= '<p>Requires rebuild = TRUE</p>';
   $form['description']['#markup'] .= '<p>Renders uploaded files when building the form</p>';
 
-  $form['ajax-wrapper'] = array(
+  $form['ajax_wrapper'] = array(
     '#prefix' => '<div id="ajax-wrapper">',
     '#suffix' => '</div>',
   );
 
-  $form['ajax-wrapper']['uploaded-files'] = array(
+  $form['ajax_wrapper']['uploaded-files'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => 'row'),
   );
@@ -25,7 +25,7 @@ function form_experiments_02($form, &$form_state) {
   $form_state['files'] = (isset($form_state['files']) ? $form_state['files'] : array());
 
   foreach ($form_state['files'] as $file) {
-    $form['ajax-wrapper']['uploaded-files'][$file->fid] = array(
+    $form['ajax_wrapper']['uploaded-files'][$file->fid] = array(
       '#markup' => '
         <div class="thumbnail">
           <img class="img-responsive" src="/sites/default/files/' . $file->filename . '" />
@@ -57,7 +57,8 @@ function form_experiments_02($form, &$form_state) {
 }
 
 function form_experiments_02_ajax_callback($form, &$form_state) {
-  $file = file_save_upload('file', array('file_validate_extensions' => array('png gif jpg jpeg')), "public://", FILE_EXISTS_REPLACE);
+  $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
+  $file = file_save_upload('file', $validators, "public://", FILE_EXISTS_REPLACE);
 
   if ($file) {
     $file->status = FILE_STATUS_PERMANENT;
@@ -68,5 +69,5 @@ function form_experiments_02_ajax_callback($form, &$form_state) {
     $form_state['rebuild'] = TRUE;
   }
 
-  return $form['ajax-wrapper'];
+  return $form['ajax_wrapper'];
 }
