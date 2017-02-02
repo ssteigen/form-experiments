@@ -14,140 +14,101 @@ function form_experiments_06($form, &$form_state) {
     drupal_get_path('module', 'form_experiments') . '/js/form_experiments.js',
   );
 
+  $form['summary'] = array(
+    '#markup' => 'Multi-File Upload List',
+    '#prefix' => '<p class="lead">',
+    '#suffix' => '</p>',
+  );
+
+  $form['description']['#markup'] = '<p>Single file field supports uploading several files</p>';
+  //$form['description']['#markup'] .= '<p>Requires rebuild = TRUE</p>';
+  //$form['description']['#markup'] .= '<p>Renders uploaded files when building the form</p>';
+  //$form['description']['#markup'] .= '<p>Image caption contains link to full-size image and button to delete image</p>';
+
+
   $form['notes'] = array(
     '#markup' => '
-      <h2>To-do:</h2>
-      <ul>
-        <li>Apply Bootstrap theme - check upload button behavior</li>
-        <li>Implement datepicker</li>
-        <li>Implement provider auto-complete</li>
-        <li>Add validation
-          <ul>
-            <li>Provider must be at least two characters</li>
-            <li>Title must be at least two characters</li>
-            <li>Date completed must be before today (today is also valid)</li>
-            <li>Credit hours must be an integer between .25 and 999 (inclusive - .25 and 999 are allowed)</li>
-            <li>Credit hours can be divided into quarters only (i.e. x.00, x.25, x.50, x.75 are allowed)</li>
-          </ul>
-        </li>
-        <li>File upload tweaks
-          <ul>
-            <li>Files should appear between "Supporting Documentation" heading and "choose file" input</li>
-            <li>File names should be links to open the file in a new tab</li>
-            <li>Appear blank when upload completes (clear out last filename)</li>
-            <li>Limit to three files</li>
-            <li>Limit filesize to 6MB</li>
-            <li>Supported file types: doc docx gif jpeg jpg odt pdf png tif tiff</li>
-            <li>Implement delete confirmation</li>
-          </ul>
-        </li>
-      </ul>
+      <p>To-do:
+        <ul>
+          <li>Files should appear between "Supporting Documentation" heading and "choose file" input</li>
+          <li>File names should be links to open the file in a new tab</li>
+          <li>Appear blank when upload completes (clear out last filename)</li>
+          <li>Limit to three files</li>
+          <li>Limit filesize to 6MB</li>
+          <li>Supported file types: doc docx gif jpeg jpg odt pdf png tif tiff</li>
+          <li>Implement delete confirmation</li>
+        </ul>
+      </p>
     ',
   );
 
-  $form['type'] = array(
-    '#type' => 'select',
-    '#title' => t('Activity Type'),
-    '#options' => array(t('Option 1'), t('Option 2'), t('Option 3')),
-    '#empty_option' => '- Select -',
-    //'#required' => TRUE,
-  );
-
-  $form['provider'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Provider'),
-    '#attributes' => array('placeholder' => t('Add the name of the provider')),
-    //'#required' => TRUE,
-    //'#description' => t('Add the name of the provider'),
-  );
-
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title / Description'),
-    '#attributes' => array('placeholder' => t('Add the name of the activity')),
-    //'#description' => t('Add the name of the activity'),
-    //'#required' => TRUE,
-  );
-
-  $form['date'] = array(
-    '#type' => 'date',
-    '#title' => t('Date Completed'),
-    //'#required' => TRUE,
-  );
-
-  $form['credits'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Credit Hours'),
-    '#attributes' => array('placeholder' => t('Add hours')),
-    //'#description' => t('Add hours'),
-    //'#required' => TRUE,
+  $form['ajax_wrapper'] = array(
+    '#type' => 'container',
+    '#tree' => TRUE,
+    '#attributes' => array('id' => 'ajax-wrapper'),
   );
 
   /** UPLOADED FILES **/
 
-  $form['field_container'] = array(
-    '#type' => 'container',
-    '#tree' => TRUE,
-    '#prefix' => '<div id="js-ajax-elements-wrapper">',
-    '#suffix' => '</div>',
-  );
-  $uploaded_files = isset($form_state['file_attachments']) ? $form_state['file_attachments'] : array();
-  foreach ($uploaded_files as $fid => $file) {
-    $form['field_container'][$fid] = array(
+  $form_state['files'] = isset($form_state['files']) ? $form_state['files'] : array();
+  foreach ($form_state['files'] as $file) {
+    $form['ajax_wrapper'][$file->fid] = array(
       '#type' => 'fieldset',
       '#tree' => TRUE,
     );
-    $form['field_container'][$fid]['filename'] = array(
-      '#markup' => drupal_basename($file->filename),
+
+    $form['ajax_wrapper'][$file->fid]['filename'] = array(
+      '#markup' => '<a href="/sites/default/files/' . $file->filename . '">' . $file->filename  . '</a>',
     );
-    $form['field_container'][$fid]['remove_file'] = array(
+
+    $form['ajax_wrapper'][$file->fid]['remove_file'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
       '#name' => 'remove_file_' . $file->fid,
-      '#submit' => ['form_experiments_06_remove'],
+      '#submit' => array('form_experiments_06_remove'),
       '#ajax' => array(
         'callback' => 'form_experiments_06_remove_callback',
-        'wrapper' => 'js-ajax-elements-wrapper',
+        'wrapper' => 'ajax-wrapper',
       ),
+      '#attributes' => array('class' => array('pull-right', 'btn-xs')),
     );
   }
 
   /** ADD A FILE **/
 
-  $form['file_upload'] = array(
+  $form['ajax_wrapper']['file_upload'] = array(
     '#type' => 'fieldset',
     '#tree' => FALSE,
     '#attributes' => array('class' => array('auto-upload')),
     '#title' => t('Supporting Documentation'),
   );
-  $form['file_upload']['file'] = array(
+  $form['ajax_wrapper']['file_upload']['file'] = array(
     '#type' => 'file',
   );
-  $form['file_upload']['upload'] = array(
+  $form['ajax_wrapper']['file_upload']['upload'] = array(
     '#type' => 'submit',
     '#value' => t('Upload'),
-    '#submit' => ['form_experiments_06_upload'],
+    '#submit' => array('form_experiments_06_upload'),
     '#ajax' => array(
       'callback' => 'form_experiments_06_upload_callback',
-      'wrapper' => 'js-ajax-elements-wrapper',
+      'wrapper' => 'ajax-wrapper',
     ),
   );
 
   /** FORM ACTIONS **/
 
   $form['form-actions'] = array(
-    '#type' => 'fieldset',
-    '#tree' => TRUE,
+    '#type' => 'actions',
   );
   $form['form-actions']['cancel'] = array(
     '#type' => 'submit',
     '#value' => t('Cancel'),
-    '#submit' => ['form_experiments_06_cancel'],
+    '#submit' => array('form_experiments_06_cancel'),
   );
   $form['form-actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
-    '#submit' => ['form_experiments_06_submit'],
+    '#submit' => array('form_experiments_06_submit'),
   );
 
   return $form;
@@ -155,28 +116,27 @@ function form_experiments_06($form, &$form_state) {
 
 function form_experiments_06_remove($form, &$form_state) {
   $fid = $form_state['triggering_element']['#parents'][1];
-  $file = $form_state['file_attachments'][$fid];
+  $file = $form_state['files'][$fid];
 
-  unset($form_state['file_attachments'][$fid]);
-  file_delete($file);
-
-  $form_state['rebuild'] = TRUE;
+  if (file_delete($file)) {
+    unset($form_state['files'][$fid]);
+    $form_state['rebuild'] = TRUE;
+  }
+  else {
+    drupal_set_message('File could not be deleted.');
+  }
 }
 
 function form_experiments_06_remove_callback($form, &$form_state) {
-  return $form['field_container'];
+  return $form['ajax_wrapper'];
 }
 
 function form_experiments_06_upload($form, &$form_state) {
   $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
-  $file = file_save_upload('file', $validators);
+  $file = file_save_upload('file', $validators, "public://", FILE_EXISTS_REPLACE);
 
   if ($file) {
-    if (!isset($form_state['file_attachments'])) {
-      $form_state['file_attachments'] = [];
-    }
-
-    $form_state['file_attachments'][$file->fid] = $file;
+    $form_state['files'][$file->fid] = $file;
 
     // Only rebuild the form when a file passes validation and is uploaded correctly.
     $form_state['rebuild'] = TRUE;
@@ -184,7 +144,7 @@ function form_experiments_06_upload($form, &$form_state) {
 }
 
 function form_experiments_06_upload_callback($form, &$form_state) {
-  return $form['field_container'];
+  return $form['ajax_wrapper'];
 }
 
 function form_experiments_06_submit($form, &$form_state) {
