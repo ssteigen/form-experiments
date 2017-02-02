@@ -10,9 +10,9 @@ function form_experiments_04($form, &$form_state) {
   $form['description']['#markup'] .= '<p>Requires rebuild = TRUE</p>';
 
   $form['ajax_wrapper'] = array(
+    '#type' => 'container',
+    '#attributes' => array('id' => 'ajax-wrapper'),
     '#tree' => TRUE,
-    '#prefix' => '<div id="ajax-wrapper">',
-    '#suffix' => '</div>',
   );
 
   $form_state['field_deltas'] = isset($form_state['field_deltas']) ? $form_state['field_deltas'] : range(0, 2);
@@ -50,6 +50,20 @@ function form_experiments_04($form, &$form_state) {
       'callback' => 'form_experiments_04_add_one_callback',
       'wrapper' => 'ajax-wrapper',
     ),
+  );
+
+  /** FORM ACTIONS **/
+
+  $form['form-actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['form-actions']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel'),
+  );
+  $form['form-actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
   );
 
   return $form;
