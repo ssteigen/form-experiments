@@ -60,13 +60,21 @@ function form_experiments_10($form, &$form_state) {
       //'showOn' => 'button',
     ),
   );
-  $form['actions'] = array(
+
+  /** FORM ACTIONS **/
+
+  $form['form-actions'] = array(
     '#type' => 'actions',
   );
-  $form['actions']['submit'] = array(
+  $form['form-actions']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel'),
+  );
+  $form['form-actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
+
   return $form;
 }
 
