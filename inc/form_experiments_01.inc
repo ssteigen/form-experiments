@@ -26,10 +26,20 @@ function form_experiments_01() {
     );
   }
 
-  $form['submit'] = array(
+  /** FORM ACTIONS **/
+
+  $form['form-actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['form-actions']['cancel'] = array(
     '#type' => 'submit',
-    '#value' => 'Submit',
+    '#value' => t('Cancel'),
+  );
+  $form['form-actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
   );
 
   return $form;
 }
+
