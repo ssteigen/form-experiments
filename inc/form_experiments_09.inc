@@ -145,7 +145,8 @@ function form_experiments_09($form, &$form_state) {
   // Empty the file upload errors.
   $form_state['file_upload_errors'] = NULL;
 
-  /* FORM ACTIONS */
+  /** FORM ACTIONS **/
+
   $form['form-actions'] = array(
     '#type' => 'actions',
     '#tree' => TRUE,
@@ -318,7 +319,7 @@ function form_experiments_09_doc_upload($form, &$form_state) {
   $all_errors = drupal_get_messages('error');
 
   // Try to upload the file.
-  $file = file_save_upload('file', $validators);
+  $file = file_save_upload('file', $validators, "public://", FILE_EXISTS_REPLACE);
 
   // Dump the errors again. These should only pertain to file upload.
   $file_save_error = drupal_get_messages('error');
