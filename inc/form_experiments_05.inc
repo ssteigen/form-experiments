@@ -48,7 +48,7 @@ function form_experiments_05($form, &$form_state) {
     );
 
     $form['ajax_wrapper']['files'][$file->fid]['thumbnail']['caption']['filename'] = array(
-      '#markup' => '<a href="/sites/default/files/' . $file->filename . '">' . $file->filename  . '</a>',
+      '#markup' => '<a target="_blank" href="/sites/default/files/' . $file->filename . '">' . $file->filename  . '</a>',
     );
 
     $form['ajax_wrapper']['files'][$file->fid]['thumbnail']['caption']['button'] = array(

@@ -30,9 +30,6 @@ function form_experiments_06($form, &$form_state) {
     '#markup' => '
       <p>To-do:
         <ul>
-          <li>Files should appear between "Supporting Documentation" heading and "choose file" input</li>
-          <li>File names should be links to open the file in a new tab</li>
-          <li>Appear blank when upload completes (clear out last filename)</li>
           <li>Limit to three files</li>
           <li>Limit filesize to 6MB</li>
           <li>Supported file types: doc docx gif jpeg jpg odt pdf png tif tiff</li>
@@ -43,9 +40,10 @@ function form_experiments_06($form, &$form_state) {
   );
 
   $form['ajax_wrapper'] = array(
-    '#type' => 'container',
+    '#type' => 'fieldset',
     '#tree' => TRUE,
     '#attributes' => array('id' => 'ajax-wrapper'),
+    '#title' => t('File Upload'),
   );
 
   /** UPLOADED FILES **/
@@ -58,7 +56,7 @@ function form_experiments_06($form, &$form_state) {
     );
 
     $form['ajax_wrapper'][$file->fid]['filename'] = array(
-      '#markup' => '<a href="/sites/default/files/' . $file->filename . '">' . $file->filename  . '</a>',
+      '#markup' => '<a target="_blank" href="/sites/default/files/' . $file->filename . '">' . $file->filename  . '</a>',
     );
 
     $form['ajax_wrapper'][$file->fid]['remove_file'] = array(
@@ -80,7 +78,6 @@ function form_experiments_06($form, &$form_state) {
     '#type' => 'fieldset',
     '#tree' => FALSE,
     '#attributes' => array('class' => array('auto-upload')),
-    '#title' => t('Supporting Documentation'),
   );
   $form['ajax_wrapper']['file_upload']['file'] = array(
     '#type' => 'file',
