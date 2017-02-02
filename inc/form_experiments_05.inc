@@ -82,6 +82,20 @@ function form_experiments_05($form, &$form_state) {
     ),
   );
 
+  /** FORM ACTIONS **/
+
+  $form['form-actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['form-actions']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel'),
+  );
+  $form['form-actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
   return $form;
 }
 
@@ -104,7 +118,7 @@ function form_experiments_05_remove_file_callback($form, &$form_state) {
 
 function form_experiments_05_add_file($form, &$form_state) {
   $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
-  $file = file_save_upload('file', $validators);
+  $file = file_save_upload('file', $validators, "public://", FILE_EXISTS_REPLACE);
 
   if ($file) {
     $file->status = FILE_STATUS_PERMANENT;
