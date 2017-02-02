@@ -309,9 +309,7 @@ function form_experiments_07_doc_remove_callback($form, &$form_state) {
  */
 function form_experiments_07_doc_upload($form, &$form_state) {
   $validators = array('file_validate_extensions' => array('png gif jpg jpeg'));
-  $file = file_save_upload('file', $validators);
-
-
+  $file = file_save_upload('file', $validators, "public://", FILE_EXISTS_REPLACE);
 
   if ($file) {
     if (!isset($form_state['file_attachments'])) {
