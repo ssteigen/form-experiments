@@ -142,7 +142,8 @@ function form_experiments_08($form, &$form_state) {
     );
   }
 
-  /* FORM ACTIONS */
+  /** FORM ACTIONS **/
+
   $form['form-actions'] = array(
     '#type' => 'actions',
     '#tree' => TRUE,
@@ -270,7 +271,7 @@ function form_experiments_08_doc_upload($form, &$form_state) {
   );
 
   // Try to upload the file.
-  $file = file_save_upload('file', $validators);
+  $file = file_save_upload('file', $validators, "public://", FILE_EXISTS_REPLACE);
 
   if ($file) {
     if (!isset($form_state['file_attachments'])) {
